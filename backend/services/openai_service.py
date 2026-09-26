@@ -81,11 +81,15 @@ class OpenAIService:
     "weaknesses": ["слабая сторона 1", "слабая сторона 2", ...],
     "unique_offers": ["уникальное предложение 1", "уникальное предложение 2", ...],
     "recommendations": ["рекомендация 1", "рекомендация 2", ...],
+    "design_score": 0,
+    "animation_potential": ["Идея анимации или интерактивного эффекта 1", "Идея 2"],
     "summary": "Краткое резюме анализа"
 }
 
 Важно:
 - Каждый массив должен содержать 3-5 пунктов
+- design_score — целое число от 0 до 10: оцени визуальную выразительность, иерархию и целостность дизайна по доступному текстовому описанию; если визуальных данных нет, оцени осторожно
+- animation_potential — 3-5 конкретных идей анимации или интерактивности, уместных для сайта/продукта; учитывай сферу бизнеса и не предлагай эффекты ради эффектов
 - Пиши на русском языке
 - Будь конкретен и практичен в рекомендациях"""
 
@@ -117,6 +121,8 @@ class OpenAIService:
                 weaknesses=data.get("weaknesses", []),
                 unique_offers=data.get("unique_offers", []),
                 recommendations=data.get("recommendations", []),
+                design_score=data.get("design_score", 0),
+                animation_potential=data.get("animation_potential", []),
                 summary=data.get("summary", "")
             )
             
@@ -146,12 +152,16 @@ class OpenAIService:
     "description": "Детальное описание того, что изображено",
     "marketing_insights": ["инсайт 1", "инсайт 2", ...],
     "visual_style_score": 7,
+    "design_score": 7,
+    "animation_potential": ["Плавное появление ключевого блока", "Интерактивный hover для CTA"],
     "visual_style_analysis": "Анализ визуального стиля конкурента",
     "recommendations": ["рекомендация 1", "рекомендация 2", ...]
 }
 
 Важно:
 - visual_style_score от 0 до 10
+- design_score от 0 до 10; оцени качество композиции, визуальную иерархию и соответствие цели
+- animation_potential — 3-5 применимых идей motion-дизайна для баннера, сайта или продукта с указанием, какой элемент анимировать и зачем
 - Каждый массив должен содержать 3-5 пунктов
 - Пиши на русском языке
 - Оценивай: цветовую палитру, типографику, композицию, UX/UI элементы"""
@@ -196,6 +206,8 @@ class OpenAIService:
                 description=data.get("description", ""),
                 marketing_insights=data.get("marketing_insights", []),
                 visual_style_score=data.get("visual_style_score", 5),
+                design_score=data.get("design_score", data.get("visual_style_score", 5)),
+                animation_potential=data.get("animation_potential", []),
                 visual_style_analysis=data.get("visual_style_analysis", ""),
                 recommendations=data.get("recommendations", [])
             )
@@ -216,7 +228,8 @@ class OpenAIService:
         self, 
         title: Optional[str], 
         h1: Optional[str], 
-        paragraph: Optional[str]
+        paragraph: Optional[str],
+        page_content: Optional[str] = None
     ) -> CompetitorAnalysis:
         """Анализ распарсенного контента сайта"""
         logger.info("📄 Анализ распарсенного контента")
@@ -231,6 +244,8 @@ class OpenAIService:
             content_parts.append(f"Главный заголовок (H1): {h1}")
         if paragraph:
             content_parts.append(f"Первый абзац: {paragraph}")
+        if page_content:
+            content_parts.append(f"Полный видимый контент страницы:\n{page_content}")
         
         combined_text = "\n\n".join(content_parts)
         
@@ -248,7 +263,8 @@ class OpenAIService:
         url: str,
         title: Optional[str] = None,
         h1: Optional[str] = None,
-        first_paragraph: Optional[str] = None
+        first_paragraph: Optional[str] = None,
+        page_content: Optional[str] = None
     ) -> CompetitorAnalysis:
         """Комплексный анализ сайта конкурента по скриншоту"""
         logger.info("=" * 50)
@@ -267,6 +283,11 @@ class OpenAIService:
             context_parts.append(f"Главный заголовок (H1): {h1}")
         if first_paragraph:
             context_parts.append(f"Текст на странице: {first_paragraph[:300]}")
+        if page_content:
+            context_parts.append(
+                "Полный видимый контент страницы (используй его как основной источник фактов):\n"
+                + page_content
+            )
         
         context = "\n".join(context_parts)
         logger.debug(f"  Контекст:\n{context}")
@@ -279,12 +300,16 @@ class OpenAIService:
     "weaknesses": ["слабая сторона 1", "слабая сторона 2", ...],
     "unique_offers": ["уникальное предложение/фича 1", "уникальное предложение/фича 2", ...],
     "recommendations": ["рекомендация 1", "рекомендация 2", ...],
+    "design_score": 0,
+    "animation_potential": ["Идея анимации или интерактивного эффекта 1", "Идея 2"],
     "summary": "Комплексное резюме анализа сайта конкурента"
 }
 
 При анализе обращай внимание на:
 - Дизайн и визуальный стиль (цвета, шрифты, композиция)
 - UX/UI: навигация, расположение элементов, CTA кнопки
+- design_score — целое число от 0 до 10 за визуальный дизайн сайта; опирайся на скриншот и полный текст страницы
+- animation_potential — 3-5 конкретных идей motion-дизайна для hero-блока, карточек, CTA, навигации или других элементов сайта; для каждой идеи укажи пользу для UX
 - Контент: заголовки, тексты, призывы к действию
 - Уникальные торговые предложения (УТП)
 - Целевая аудитория (на кого ориентирован сайт)
@@ -309,7 +334,9 @@ class OpenAIService:
                         "content": [
                             {
                                 "type": "text",
-                                "text": f"Проведи комплексный конкурентный анализ этого сайта:\n\n{context}"
+                                "text": f"Проведи комплексный конкурентный анализ этого сайта.\n"
+                                        f"Учитывай весь переданный текст страницы и изображение браузера;"
+                                        f" не додумывай отсутствующие факты.\n\n{context}"
                             },
                             {
                                 "type": "image_url",
@@ -337,6 +364,8 @@ class OpenAIService:
                 weaknesses=data.get("weaknesses", []),
                 unique_offers=data.get("unique_offers", []),
                 recommendations=data.get("recommendations", []),
+                design_score=data.get("design_score", 0),
+                animation_potential=data.get("animation_potential", []),
                 summary=data.get("summary", "")
             )
             

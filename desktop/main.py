@@ -54,11 +54,11 @@ class DropZone(QFrame):
         self.icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         self.text_label = QLabel("Перетащите изображение или нажмите для выбора")
-        self.text_label.setStyleSheet("color: #94a3b8; font-size: 14px;")
+        self.text_label.setStyleSheet("color: #718092; font-size: 14px;")
         self.text_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         self.hint_label = QLabel("PNG, JPG, GIF, WEBP до 10MB")
-        self.hint_label.setStyleSheet("color: #64748b; font-size: 12px;")
+        self.hint_label.setStyleSheet("color: #a7a097; font-size: 12px;")
         self.hint_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         self.preview_label = QLabel()
@@ -85,7 +85,7 @@ class DropZone(QFrame):
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
-            self.setStyleSheet("QFrame#uploadZone { border-color: #06b6d4; background-color: rgba(6, 182, 212, 0.1); }")
+            self.setStyleSheet("QFrame#uploadZone { border-color: #f36f4d; background-color: #fff4ee; }")
     
     def dragLeaveEvent(self, event):
         self.setStyleSheet("")
@@ -137,7 +137,7 @@ class ResultBlock(QFrame):
         for item in items:
             item_label = QLabel(f"{icon} {item}")
             item_label.setWordWrap(True)
-            item_label.setStyleSheet("color: #94a3b8; margin-left: 8px; line-height: 1.5;")
+            item_label.setStyleSheet("color: #667487; margin-left: 8px; line-height: 1.5;")
             layout.addWidget(item_label)
 
 
@@ -147,8 +147,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Мониторинг конкурентов | AI Ассистент")
-        self.setMinimumSize(1200, 800)
-        self.resize(1400, 900)
+        self.setMinimumSize(1180, 780)
+        self.resize(1360, 860)
         
         # Применяем стили
         self.setStyleSheet(DARK_THEME)
@@ -178,7 +178,7 @@ class MainWindow(QMainWindow):
         """Создание боковой панели"""
         sidebar = QFrame()
         sidebar.setObjectName("sidebar")
-        sidebar.setFixedWidth(280)
+        sidebar.setFixedWidth(260)
         
         layout = QVBoxLayout(sidebar)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -217,7 +217,7 @@ class MainWindow(QMainWindow):
         
         # Status
         self.status_label = QLabel("● Проверка подключения...")
-        self.status_label.setStyleSheet("color: #f59e0b; padding: 16px;")
+        self.status_label.setStyleSheet("color: #e5a23c; padding: 16px;")
         nav_layout.addWidget(self.status_label)
         
         layout.addWidget(nav_widget)
@@ -227,7 +227,7 @@ class MainWindow(QMainWindow):
         """Создание области контента"""
         content_widget = QWidget()
         content_layout = QVBoxLayout(content_widget)
-        content_layout.setContentsMargins(40, 32, 40, 32)
+        content_layout.setContentsMargins(48, 36, 48, 36)
         
         # Header
         header = QWidget()
@@ -276,7 +276,7 @@ class MainWindow(QMainWindow):
         self.progress_bar.setFixedWidth(300)
         
         self.loading_label = QLabel("Анализирую данные...")
-        self.loading_label.setStyleSheet("color: #94a3b8; font-size: 16px;")
+        self.loading_label.setStyleSheet("color: #718092; font-size: 16px;")
         self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         loading_layout.addWidget(self.progress_bar, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -380,7 +380,7 @@ class MainWindow(QMainWindow):
         url_layout = QHBoxLayout()
         
         prefix = QLabel("https://")
-        prefix.setStyleSheet("background-color: #243049; padding: 12px 16px; border-radius: 8px 0 0 8px; color: #64748b;")
+        prefix.setStyleSheet("background-color: #eee6dc; padding: 12px 16px; border-radius: 8px 0 0 8px; color: #7b8795;")
         
         self.url_input = QLineEdit()
         self.url_input.setPlaceholderText("example.com")
@@ -445,6 +445,7 @@ class MainWindow(QMainWindow):
             btn.setChecked(i == index)
         
         self.stacked_widget.setCurrentIndex(index)
+        self.stacked_widget.show()
         self.results_scroll.hide()
         
         # Загружаем историю при переключении на вкладку
@@ -455,15 +456,16 @@ class MainWindow(QMainWindow):
         """Проверка подключения к серверу"""
         if api_client.check_health():
             self.status_label.setText("● Система активна")
-            self.status_label.setStyleSheet("color: #10b981; padding: 16px;")
+            self.status_label.setStyleSheet("color: #43a884; padding: 16px;")
         else:
             self.status_label.setText("● Сервер недоступен")
-            self.status_label.setStyleSheet("color: #ef4444; padding: 16px;")
+            self.status_label.setStyleSheet("color: #d85748; padding: 16px;")
     
     def show_loading(self, message: str = "Анализирую данные..."):
         """Показать индикатор загрузки"""
         self.loading_label.setText(message)
         self.loading_widget.show()
+        self.stacked_widget.hide()
         self.results_scroll.hide()
         
         # Отключаем кнопки
@@ -474,6 +476,7 @@ class MainWindow(QMainWindow):
     def hide_loading(self):
         """Скрыть индикатор загрузки"""
         self.loading_widget.hide()
+        self.stacked_widget.show()
         
         # Включаем кнопки
         self.analyze_text_btn.setEnabled(True)
@@ -516,10 +519,26 @@ class MainWindow(QMainWindow):
                 self.results_layout.addWidget(block)
             
             # Резюме
+            if "design_score" in analysis:
+                design_frame = QFrame()
+                design_frame.setObjectName("resultBlock")
+                design_layout = QVBoxLayout(design_frame)
+                design_title = QLabel("Оценка дизайна")
+                design_title.setObjectName("sectionTitle")
+                design_value = QLabel(f"{analysis['design_score']}/10")
+                design_value.setStyleSheet("font-size: 30px; font-weight: bold; color: #f36f4d;")
+                design_layout.addWidget(design_title)
+                design_layout.addWidget(design_value)
+                self.results_layout.addWidget(design_frame)
+
+            if analysis.get("animation_potential"):
+                block = ResultBlock("Потенциал анимации", analysis["animation_potential"], icon="→")
+                self.results_layout.addWidget(block)
+
             if analysis.get("summary"):
                 summary_frame = QFrame()
                 summary_frame.setObjectName("resultBlock")
-                summary_frame.setStyleSheet("QFrame#resultBlock { background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(6, 182, 212, 0.1), stop:1 rgba(139, 92, 246, 0.1)); }")
+                summary_frame.setStyleSheet("QFrame#resultBlock { background-color: #fff1eb; border-left-color: #f36f4d; }")
                 summary_layout = QVBoxLayout(summary_frame)
                 
                 summary_title = QLabel("📝 Резюме")
@@ -527,7 +546,7 @@ class MainWindow(QMainWindow):
                 
                 summary_text = QLabel(analysis["summary"])
                 summary_text.setWordWrap(True)
-                summary_text.setStyleSheet("color: #f1f5f9; font-size: 15px; line-height: 1.6;")
+                summary_text.setStyleSheet("color: #364457; font-size: 15px; line-height: 1.6;")
                 
                 summary_layout.addWidget(summary_title)
                 summary_layout.addWidget(summary_text)
@@ -545,7 +564,7 @@ class MainWindow(QMainWindow):
                 
                 desc_text = QLabel(analysis["description"])
                 desc_text.setWordWrap(True)
-                desc_text.setStyleSheet("color: #94a3b8;")
+                desc_text.setStyleSheet("color: #667487;")
                 
                 desc_layout.addWidget(desc_title)
                 desc_layout.addWidget(desc_text)
@@ -562,12 +581,12 @@ class MainWindow(QMainWindow):
                 score_title.setObjectName("sectionTitle")
                 
                 score_value = QLabel(f"{score}/10")
-                score_value.setStyleSheet("font-size: 32px; font-weight: bold; color: #22d3ee;")
+                score_value.setStyleSheet("font-size: 32px; font-weight: bold; color: #f36f4d;")
                 
                 if analysis.get("visual_style_analysis"):
                     score_desc = QLabel(analysis["visual_style_analysis"])
                     score_desc.setWordWrap(True)
-                    score_desc.setStyleSheet("color: #94a3b8;")
+                    score_desc.setStyleSheet("color: #667487;")
                     score_layout.addWidget(score_desc)
                 
                 score_layout.addWidget(score_title)
@@ -575,6 +594,22 @@ class MainWindow(QMainWindow):
                 self.results_layout.addWidget(score_frame)
             
             # Маркетинговые инсайты
+            if "design_score" in analysis:
+                design_frame = QFrame()
+                design_frame.setObjectName("resultBlock")
+                design_layout = QVBoxLayout(design_frame)
+                design_title = QLabel("Оценка дизайна")
+                design_title.setObjectName("sectionTitle")
+                design_value = QLabel(f"{analysis['design_score']}/10")
+                design_value.setStyleSheet("font-size: 30px; font-weight: bold; color: #f36f4d;")
+                design_layout.addWidget(design_title)
+                design_layout.addWidget(design_value)
+                self.results_layout.addWidget(design_frame)
+
+            if analysis.get("animation_potential"):
+                block = ResultBlock("Потенциал анимации", analysis["animation_potential"], icon="→")
+                self.results_layout.addWidget(block)
+
             if analysis.get("marketing_insights"):
                 block = ResultBlock("💡 Маркетинговые инсайты", analysis["marketing_insights"])
                 self.results_layout.addWidget(block)
@@ -585,6 +620,7 @@ class MainWindow(QMainWindow):
                 self.results_layout.addWidget(block)
         
         self.results_layout.addStretch()
+        self.stacked_widget.hide()
         self.results_scroll.show()
     
     def show_error(self, message: str):
@@ -695,10 +731,10 @@ class MainWindow(QMainWindow):
                 
                 type_labels = {"text": "Анализ текста", "image": "Анализ изображения", "parse": "Парсинг сайта"}
                 type_label = QLabel(type_labels.get(item.get("request_type", ""), item.get("request_type", "")))
-                type_label.setStyleSheet("color: #22d3ee; font-size: 12px; font-weight: bold;")
+                type_label.setStyleSheet("color: #e75d42; font-size: 12px; font-weight: bold;")
                 
                 summary = QLabel(item.get("request_summary", "")[:60] + "...")
-                summary.setStyleSheet("color: #94a3b8;")
+                summary.setStyleSheet("color: #667487;")
                 
                 content_layout.addWidget(type_label)
                 content_layout.addWidget(summary)
@@ -715,7 +751,7 @@ class MainWindow(QMainWindow):
                     time_str = ""
                 
                 time_label = QLabel(time_str)
-                time_label.setStyleSheet("color: #64748b; font-size: 12px;")
+                time_label.setStyleSheet("color: #a7a097; font-size: 12px;")
                 
                 layout.addWidget(icon)
                 layout.addWidget(content, stretch=1)
@@ -724,7 +760,7 @@ class MainWindow(QMainWindow):
                 self.history_layout.addWidget(frame)
         else:
             empty_label = QLabel("📋 История пуста")
-            empty_label.setStyleSheet("color: #64748b; font-size: 16px; padding: 40px;")
+            empty_label.setStyleSheet("color: #a7a097; font-size: 16px; padding: 40px;")
             empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.history_layout.addWidget(empty_label)
         

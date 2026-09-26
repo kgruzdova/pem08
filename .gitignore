@@ -8,6 +8,9 @@ venv/
 ENV/
 env/
 
+# Local secrets
+.env
+
 # IDE
 .idea/
 .vscode/

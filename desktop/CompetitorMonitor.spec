@@ -2,11 +2,11 @@
 
 
 a = Analysis(
-    ['main.py'],
+    ['E:/ИИ/!Промпт-инженер/PEm08/pem08/desktop/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('styles.py', '.'), ('api_client.py', '.')],
-    hiddenimports=['PyQt6', 'PyQt6.QtCore', 'PyQt6.QtWidgets', 'PyQt6.QtGui', 'requests'],
+    datas=[],
+    hiddenimports=['PyQt6.QtCore', 'PyQt6.QtGui', 'PyQt6.QtWidgets'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

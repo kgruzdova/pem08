@@ -4,6 +4,8 @@ API клиент для связи с backend
 import requests
 from typing import Optional, Dict, Any
 import base64
+import mimetypes
+import os
 
 
 class APIClient:
@@ -51,7 +53,9 @@ class APIClient:
         """Анализ изображения конкурента"""
         try:
             with open(image_path, 'rb') as f:
-                files = {'file': (image_path.split('/')[-1], f, 'image/jpeg')}
+                filename = os.path.basename(image_path)
+                mime_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+                files = {'file': (filename, f, mime_type)}
                 return self._request("POST", "/analyze_image", files=files)
         except FileNotFoundError:
             return {"success": False, "error": "Файл не найден"}

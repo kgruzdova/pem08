@@ -26,6 +26,11 @@ class CompetitorAnalysis(BaseModel):
     weaknesses: List[str] = Field(default_factory=list, description="Слабые стороны")
     unique_offers: List[str] = Field(default_factory=list, description="Уникальные предложения")
     recommendations: List[str] = Field(default_factory=list, description="Рекомендации")
+    design_score: int = Field(0, ge=0, le=10, description="Оценка визуального стиля и дизайна (0-10)")
+    animation_potential: List[str] = Field(
+        default_factory=list,
+        description="Идеи анимаций и интерактивных эффектов для сайта или продукта"
+    )
     summary: str = Field("", description="Общее резюме")
 
 
@@ -34,6 +39,11 @@ class ImageAnalysis(BaseModel):
     description: str = Field("", description="Описание изображения")
     marketing_insights: List[str] = Field(default_factory=list, description="Маркетинговые инсайты")
     visual_style_score: int = Field(0, ge=0, le=10, description="Оценка визуального стиля (0-10)")
+    design_score: int = Field(0, ge=0, le=10, description="Оценка дизайна изображения (0-10)")
+    animation_potential: List[str] = Field(
+        default_factory=list,
+        description="Идеи анимации или motion-эффектов для этого визуала"
+    )
     visual_style_analysis: str = Field("", description="Анализ визуального стиля")
     recommendations: List[str] = Field(default_factory=list, description="Рекомендации")
 

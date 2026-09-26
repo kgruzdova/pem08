@@ -66,7 +66,7 @@ class ParserService:
         
         return driver
     
-    def _parse_sync(self, url: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[bytes], Optional[str]]:
+    def _parse_sync(self, url: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str], Optional[bytes], Optional[str]]:
         """
         Синхронный парсинг URL (выполняется в отдельном потоке)
         """
@@ -111,7 +111,7 @@ class ParserService:
             except Exception as e:
                 logger.debug(f"  H1 не найден: {e}")
             
-            # Извлекаем первый абзац
+            # Извлекаем первый абзац для обратной совместимости API
             first_paragraph = None
             try:
                 paragraphs = driver.find_elements(By.TAG_NAME, 'p')
@@ -124,6 +124,17 @@ class ParserService:
                         break
             except Exception as e:
                 logger.debug(f"  Абзацы не найдены: {e}")
+
+            # Получаем весь видимый текст уже отрендеренной страницы.
+            # Это важнее page_source: в нём есть контент, добавленный JavaScript,
+            # но нет служебных скриптов и разметки, не предназначенной пользователю.
+            page_content = ""
+            try:
+                body = driver.find_element(By.TAG_NAME, "body")
+                page_content = body.text.strip() if body.text else ""
+                logger.info(f"  Полный текст страницы: {len(page_content)} символов")
+            except Exception as e:
+                logger.warning(f"  Не удалось получить полный текст страницы: {e}")
             
             # Делаем скриншот
             logger.info("  📸 Создание скриншота...")
@@ -137,13 +148,13 @@ class ParserService:
             logger.info(f"  ✅ ПАРСИНГ ЗАВЕРШЁН за {total_elapsed:.2f} сек")
             logger.info("=" * 50)
             
-            return title, h1, first_paragraph, screenshot_bytes, None
+            return title, h1, first_paragraph, page_content, screenshot_bytes, None
             
         except TimeoutException:
             total_elapsed = time.time() - total_start
             logger.error(f"  ✗ TIMEOUT за {total_elapsed:.2f} сек")
             logger.error("=" * 50)
-            return None, None, None, None, "Превышено время ожидания загрузки страницы"
+            return None, None, None, None, None, "Превышено время ожидания загрузки страницы"
             
         except WebDriverException as e:
             total_elapsed = time.time() - total_start
@@ -153,19 +164,19 @@ class ParserService:
             logger.error("=" * 50)
             
             if 'net::ERR_NAME_NOT_RESOLVED' in error_msg:
-                return None, None, None, None, "Не удалось найти сайт по указанному адресу"
+                return None, None, None, None, None, "Не удалось найти сайт по указанному адресу"
             elif 'net::ERR_CONNECTION_REFUSED' in error_msg:
-                return None, None, None, None, "Соединение отклонено сервером"
+                return None, None, None, None, None, "Соединение отклонено сервером"
             elif 'net::ERR_CONNECTION_TIMED_OUT' in error_msg:
-                return None, None, None, None, "Превышено время ожидания соединения"
+                return None, None, None, None, None, "Превышено время ожидания соединения"
             else:
-                return None, None, None, None, f"Ошибка браузера: {error_msg[:200]}"
+                return None, None, None, None, None, f"Ошибка браузера: {error_msg[:200]}"
                 
         except Exception as e:
             total_elapsed = time.time() - total_start
             logger.error(f"  ✗ Неизвестная ошибка за {total_elapsed:.2f} сек: {e}")
             logger.error("=" * 50)
-            return None, None, None, None, f"Ошибка при загрузке страницы: {str(e)[:200]}"
+            return None, None, None, None, None, f"Ошибка при загрузке страницы: {str(e)[:200]}"
             
         finally:
             if driver:
@@ -176,7 +187,7 @@ class ParserService:
                 except Exception as e:
                     logger.warning(f"  Ошибка при закрытии драйвера: {e}")
     
-    async def parse_url(self, url: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[bytes], Optional[str]]:
+    async def parse_url(self, url: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str], Optional[bytes], Optional[str]]:
         """
         Асинхронный парсинг URL через Chrome
         """

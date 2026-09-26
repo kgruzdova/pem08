@@ -233,7 +233,7 @@ async def parse_demo(request: ParseDemoRequest):
         # Открываем страницу в Chrome и делаем скриншот
         logger.info("  🔍 Запуск парсинга...")
         parse_start = time.time()
-        title, h1, first_paragraph, screenshot_bytes, error = await parser_service.parse_url(request.url)
+        title, h1, first_paragraph, page_content, screenshot_bytes, error = await parser_service.parse_url(request.url)
         parse_elapsed = time.time() - parse_start
         logger.info(f"  ✓ Парсинг завершён за {parse_elapsed:.2f} сек")
         
@@ -262,14 +262,16 @@ async def parse_demo(request: ParseDemoRequest):
                 url=request.url,
                 title=title,
                 h1=h1,
-                first_paragraph=first_paragraph
+                first_paragraph=first_paragraph,
+                page_content=page_content
             )
         else:
             logger.warning("  ⚠ Скриншот недоступен, fallback на текстовый анализ")
             analysis = await openai_service.analyze_parsed_content(
                 title=title,
                 h1=h1,
-                paragraph=first_paragraph
+                paragraph=first_paragraph,
+                page_content=page_content
             )
         
         ai_elapsed = time.time() - ai_start

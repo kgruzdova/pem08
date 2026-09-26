@@ -1,81 +1,44 @@
-# 🖥️ Мониторинг конкурентов - Desktop App
+# CompetitorAI Desktop
 
-Десктопное приложение на PyQt6, полностью повторяющее функционал веб-интерфейса.
+The single PyQt6 desktop application for this project. It mirrors the web interface:
 
-## 📋 Требования
+- competitor text analysis;
+- image analysis with file picker and drag-and-drop;
+- website parsing through the backend and Selenium Chrome;
+- request history viewing and clearing;
+- asynchronous requests without freezing the UI.
 
-- Python 3.9+
-- Запущенный backend сервер (из корневой директории проекта)
+## Run
 
-## 🚀 Быстрый старт
+Start the backend from the project root:
 
-### 1. Установка зависимостей
-
-```bash
-cd desktop
-pip install -r requirements.txt
-```
-
-### 2. Запуск приложения
-
-**Важно:** Сначала запустите backend сервер!
-
-```bash
-# В корне проекта:
+```powershell
 python run.py
-
-# В отдельном терминале, в папке desktop:
-cd desktop
-python main.py
 ```
 
-## 📦 Сборка .exe
+Then, in another terminal:
 
-### Сборка исполняемого файла
-
-```bash
-cd desktop
-python build.py
+```powershell
+python desktop/main.py
 ```
 
-После сборки файл `CompetitorMonitor.exe` будет в папке `dist/`.
+The backend must be available at `http://localhost:8000`.
 
-### Очистка артефактов сборки
+## Build EXE
 
-```bash
-python build.py clean
+```powershell
+python -m pip install -r desktop/requirements.txt
+python desktop/build.py
 ```
 
-## 🎨 Функционал
+The executable is created at:
 
-- **📝 Анализ текста** — вставьте текст конкурента для анализа
-- **🖼️ Анализ изображений** — drag & drop изображений
-- **🌐 Парсинг сайта** — введите URL для автоматического анализа
-- **📋 История** — просмотр последних 10 запросов
-
-## 🔧 Архитектура
-
-```
-desktop/
-├── main.py          # Главное окно PyQt6
-├── styles.py        # Тёмная тема с cyan акцентами
-├── api_client.py    # HTTP клиент для backend API
-├── build.py         # Скрипт сборки .exe
-├── requirements.txt # Зависимости
-└── README.md        # Этот файл
+```text
+desktop/dist/CompetitorMonitor.exe
 ```
 
-## ⚠️ Важно
+To remove build artifacts:
 
-- Приложение требует запущенный backend на `http://localhost:8000`
-- При сборке .exe backend должен быть запущен отдельно
-- Для полностью автономного приложения нужно встроить backend (не реализовано)
-
-## 🖼️ Скриншот
-
-Интерфейс повторяет веб-версию:
-- Тёмная тема
-- Боковая панель навигации
-- Карточки с формами ввода
-- Результаты анализа в красивых блоках
-
+```powershell
+python desktop/build.py clean
+```
